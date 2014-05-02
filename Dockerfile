@@ -18,6 +18,8 @@ RUN chmod 755 /start.sh
 RUN chmod 755 /etc/apache2/foreground.sh
 RUN mkdir /var/log/supervisor/
 RUN mkdir /var/run/sshd
+# zh_TW version
+RUN sed -i "s/'WPLANG', ''/'WPLANG', 'zh_TW'/g" /var/www/wp-config-sample.php
 EXPOSE 80
 EXPOSE 22
 CMD ["/bin/bash", "/start.sh"]
