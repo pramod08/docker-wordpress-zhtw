@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:14.04
 MAINTAINER John Fink <john.fink@gmail.com>
 RUN apt-get update # Mon Jan 27 11:35:22 EST 2014
 RUN apt-get -y upgrade
