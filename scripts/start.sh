@@ -38,7 +38,8 @@ s/password_here/$WORDPRESS_PASSWORD/
 mv /etc/php5/apache2/php.ini /etc/php5/apache2/php.ini.orig
 sed "s/upload_max_filesize = 2M/upload_max_filesize = 20M/" /etc/php5/apache2/php.ini.orig > /etc/php5/apache2/php.ini
 
- 
+# zh_TW version
+sed -i "s/'WPLANG', ''/'WPLANG', 'zh_TW'/g" /var/www/wp-config.php 
 
 chown www-data:www-data /var/www/wp-config.php
 mysqladmin -u root password $MYSQL_PASSWORD 
