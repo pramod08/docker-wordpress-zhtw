@@ -6,7 +6,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install nano zip curl git mysql-cl
 RUN easy_install supervisor
 ADD ./scripts/foreground.sh /etc/apache2/foreground.sh
 ADD ./configs/supervisord.conf /etc/supervisord.conf
-RUN echo %sudo	ALL=NOPASSWD: ALL >> /etc/sudoers
 RUN rm -rf /var/www/
 # Only for English version
 # ADD http://wordpress.org/latest.tar.gz /wordpress.tar.gz
@@ -35,9 +34,32 @@ RUN chown -R www-data:www-data /var/www/
 #
 ADD ./configs/000-default.conf /etc/apache2/sites-available/000-default.conf 
 RUN a2enmod headers
+
+#
+# Install Node.js
+RUN apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:chris-lea/node.js && \
+	apt-get update && apt-get install -y nodejs &&\
+	npm install -g grunt-cli
+
 ADD ./scripts/start.sh /start.sh
 RUN chmod 755 /start.sh
+RUN chmod u+s /usr/bin/sudo
+#
+# add user
+#
+RUN mkdir -p /home/docker &&\
+   useradd docker &&\
+   echo "docker:docker" | chpasswd &&\
+   mkdir -p /home/docker/.ssh; chmod 700 /home/docker/.ssh &&\
+   chown -R docker /home/docker &&\
+   echo "docker ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+ADD ./scripts/package.json /home/docker/
+ADD ./scripts/Gruntfile.js /home/docker/
+
+RUN cd /home/docker && su docker -c 'npm install'
+   
 EXPOSE 80
 EXPOSE 22
 CMD ["/bin/bash", "/start.sh"]
