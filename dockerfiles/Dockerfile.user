@@ -1,0 +1,9 @@
+#
+# add user
+#
+RUN mkdir -p /home/docker &&\
+   useradd docker &&\
+   echo "docker:docker" | chpasswd &&\
+   mkdir -p /home/docker/.ssh; chmod 700 /home/docker/.ssh &&\
+   chown -R docker /home/docker &&\
+   echo "docker ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers

@@ -1,0 +1,11 @@
+#
+# Install Node.js
+RUN apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:chris-lea/node.js && \
+	apt-get update && apt-get install -y nodejs &&\
+	npm install -g grunt-cli
+
+ADD ./scripts/package.json /home/docker/
+ADD ./scripts/Gruntfile.js /home/docker/
+RUN cd /home/docker && su docker -c 'npm install'
+   

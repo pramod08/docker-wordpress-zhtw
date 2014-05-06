@@ -1,0 +1,5 @@
+#
+# footer expose 80 http /22 ssh
+EXPOSE 80
+EXPOSE 22
+CMD ["/bin/bash", "/start.sh"]

@@ -1,0 +1,8 @@
+#
+# install json api
+#
+RUN cd /var/www/wp-content/plugins/ && \
+   wget -q http://downloads.wordpress.org/plugin/json-api.1.1.1.zip -O json-api.zip && \
+   unzip json-api.zip && rm json-api.zip
+
+RUN chown -R www-data:www-data /var/www/wp-content/plugins/json-api
