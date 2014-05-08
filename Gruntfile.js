@@ -37,6 +37,12 @@ module.exports = function (grunt) {
 				cmd : 'sudo docker.io stop $(sudo docker.io ps -q)',
 				exitCodes : [0, 1, 2]
 			},
+			dk_images_grep : {
+				cmd : function (img) {
+					return 'sudo docker.io images | grep ' + img;
+				},
+				exitCodes : [0]
+			},
 			dk_build : {
 				cmd : function (img) {
 					return 'sudo docker.io build -t="' + img + '" .';
@@ -50,7 +56,14 @@ module.exports = function (grunt) {
 				},
 				exitCodes : [0]
 			},
-			dk_run : {
+			dk_run_http : {
+				cmd : function (img, tag, port) {
+					//var name = 'ssl-' + img.replace('/', '-');
+					return 'sudo docker.io run -d -p ' + port + ':80 ' + img + ":" + tag;
+				},
+				exitCodes : [0]
+			},
+			dk_run_basic : {
 				cmd : function (img) {
 					//var name = 'ssl-' + img.replace('/', '-');
 					return 'sudo docker.io run -d -p 80:80 -p 8022:22 ' + img;
@@ -102,32 +115,59 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-zip');
 	grunt.loadNpmTasks('grunt-contrib-concat');
 
+	function checkImgArg(img) {
+		console.log('Check docker image :' + img);
+		if (!img) {
+			grunt.fail.fatal('docker image name must provide. ');
+			return;
+		}
+	}
+
 	grunt.registerTask('dk-build-basic', 'build docker basic image', function (img) {
-		grunt.task.run('default', 'exec:dk_build:' + img);
+		checkImgArg(img);
+		grunt.task.run('df-basic', 'exec:dk_build:' + img, 'exec:dk_images_grep:' + img);
 	});
 
 	grunt.registerTask('dk-build-ssl', 'build docker ssl image', function (img) {
-		grunt.task.run('df-ssl', 'exec:dk_build:' + img);
+		checkImgArg(img);
+		grunt.task.run('df-ssl', 'exec:dk_build:' + img, 'exec:dk_images_grep:' + img);
 	});
 
 	grunt.registerTask('dk-run-basic', 'run docker basic image', function (img) {
-		grunt.task.run('exec:dk_run:' + img, 'dk-psip');
+		checkImgArg(img);
+		grunt.task.run('exec:dk_run_basic:' + img, 'dk-psip');
+	});
+
+	grunt.registerTask('dk-test-run', 'run docker basic image', function (img, tag, num) {
+		checkImgArg(img);
+		if (!num) {
+			num = 1;
+		}
+		var port = 8080;
+		for (var i = 0; i < num; i++) {
+			port = 8080 + i;
+			grunt.task.run('exec:dk_run_http:' + img + ':' + tag + ':' + port);
+		}
+		grunt.task.run('dk-psip');
+
 	});
 
 	grunt.registerTask('dk-run-ssl', 'run docker ssl image', function (img) {
+		checkImgArg(img);
 		grunt.task.run('exec:dk_run_ssl:' + img, 'dk-psip');
 	});
 
 	grunt.registerTask('dk-brun-basic', 'stop, build and run basic docker image', function (img) {
+		checkImgArg(img);
 		grunt.task.run('dk-stop-all', 'dk-build-basic:' + img, 'dk-run-basic:' + img);
 	});
 
 	grunt.registerTask('dk-brun-ssl', 'stop, build and run ssl docker image', function (img) {
+		checkImgArg(img);
 		grunt.task.run('dk-stop-all', 'dk-build-ssl:' + img, 'dk-run-ssl:' + img);
 	});
 
 	grunt.registerTask('dk-stop-all', 'Stop all docker container', ['exec:dk_stop_all']);
-
 	grunt.registerTask('dk-psip', 'docker ps and ip', ['exec:dk_ps', 'exec:dk_ip']);
 	grunt.registerTask('dk-clean', ['exec:dk_rm', 'exec:dk_rmi']);
 	grunt.registerTask('df-ssl', 'build Dockerfile for ssl.', ['clean', 'concat:ssl']);

@@ -49,26 +49,6 @@ ADD ./scripts/package.json /home/docker/
 ADD ./scripts/Gruntfile.js /home/docker/
 RUN cd /home/docker && su docker -c 'npm install'
    
-RUN mkdir /etc/apache2/ssl
-RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key \
-    -out /etc/apache2/ssl/apache.crt \
-	-subj "/C=TW/ST=Taichung/L=Xitun/OU=Y12STUDIO/O=WordPressDev/CN=dev.y12.tw"  
-	
-ADD ./configs/000-default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
-
-# wp-config.php
-# define('WP_DEBUG', false);
-# define('FORCE_SSL_ADMIN', true);
-# /* That's all, stop editing! Happy blogging. */
-# zh_TW 
-# RUN sed -i "s/'WPLANG', ''/'WPLANG', 'zh_TW'/g" /var/www/wp-config-sample.php
-
-RUN sed -i "s/define('WP_DEBUG', false);/define('WP_DEBUG', false);\r\ndefine('FORCE_SSL_ADMIN', true);/g" /var/www/wp-config-sample.php
-
-RUN a2enmod ssl && a2ensite default-ssl.conf
-
-EXPOSE 443
-
 #
 # footer expose 80 http /22 ssh
 EXPOSE 80
